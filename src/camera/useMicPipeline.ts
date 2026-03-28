@@ -1,7 +1,5 @@
 import { useRef, useCallback, useState } from 'react';
-
-// TODO: install expo-av — `npx expo install expo-av`
-// import { Audio } from 'expo-av';
+import { Audio } from 'expo-av';
 
 type UseMicPipelineOptions = {
   onAudioChunk: (audio: Uint8Array) => void;
@@ -10,35 +8,48 @@ type UseMicPipelineOptions = {
 
 export function useMicPipeline({ onAudioChunk, onError }: UseMicPipelineOptions) {
   const [isRecording, setIsRecording] = useState(false);
-  const recordingRef = useRef<any>(null); // will be Audio.Recording once expo-av is installed
+  const recordingRef = useRef<Audio.Recording | null>(null);
 
   const startRecording = useCallback(async () => {
     try {
-      // TODO: wire up expo-av
-      // await Audio.requestPermissionsAsync();
-      // await Audio.setAudioModeAsync({ allowsRecordingIOS: true });
-      // const { recording } = await Audio.Recording.createAsync(
-      //   Audio.RecordingOptionsPresets.HIGH_QUALITY
-      // );
-      // recordingRef.current = recording;
+      const { granted } = await Audio.requestPermissionsAsync();
+      if (!granted) {
+        onError('Microphone permission denied');
+        return;
+      }
 
-      // recording.setOnRecordingStatusUpdate((status) => {
-      //   if (status.metering !== undefined) {
-      //     // read raw audio and forward as Uint8Array chunks
-      //     // TODO: read recording URI and stream chunks to onAudioChunk
-      //   }
-      // });
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
 
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      recordingRef.current = recording;
+
+      recording.setOnRecordingStatusUpdate(async (status) => {
+        if (!status.isRecording || !recordingRef.current) return;
+        try {
+          const uri = recordingRef.current.getURI();
+          if (!uri) return;
+          const response = await fetch(uri);
+          const buffer = await response.arrayBuffer();
+          onAudioChunk(new Uint8Array(buffer));
+        } catch {
+          // non-fatal — skip chunk on read error
+        }
+      });
+
+      recording.setProgressUpdateInterval(1000);
       setIsRecording(true);
       console.log('[MicPipeline] Recording started');
     } catch (e: any) {
       onError(`Mic error: ${e.message}`);
     }
-  }, [onError]);
+  }, [onAudioChunk, onError]);
 
   const stopRecording = useCallback(async () => {
     try {
-      // TODO: await recordingRef.current?.stopAndUnloadAsync();
+      await recordingRef.current?.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
       recordingRef.current = null;
       setIsRecording(false);
       console.log('[MicPipeline] Recording stopped');

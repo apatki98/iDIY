@@ -1,8 +1,6 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-
-// TODO: install expo-camera — `npx expo install expo-camera`
-// import { Camera, CameraType } from 'expo-camera';
+import { CameraView as ExpoCameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 import { useFrameStreamer } from './useFrameStreamer';
 import { useMicPipeline } from './useMicPipeline';
@@ -17,46 +15,66 @@ type CameraViewProps = {
 };
 
 export function IDIYCameraView({ currentStep, onFrame, onAudioChunk, onError }: CameraViewProps) {
-  const cameraRef = useRef<any>(null); // will be Camera ref once expo-camera is installed
+  const cameraRef = useRef<ExpoCameraView>(null);
+  const captureIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [permission, requestPermission] = useCameraPermissions();
 
   const { submitFrame } = useFrameStreamer({ onFrame });
   const { startRecording, stopRecording } = useMicPipeline({ onAudioChunk, onError });
 
-  // Called by expo-camera on each available frame
+  useEffect(() => {
+    if (!permission?.granted) {
+      requestPermission();
+    }
+  }, [permission, requestPermission]);
+
+  const captureFrame = useCallback(async () => {
+    if (!cameraRef.current) return;
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.4,
+        shutterSound: false,
+      });
+      if (!photo?.base64) return;
+      submitFrame({
+        base64: photo.base64,
+        width: photo.width,
+        height: photo.height,
+        timestamp: Date.now(),
+      });
+    } catch (e: any) {
+      onError(`Frame capture error: ${e.message}`);
+    }
+  }, [submitFrame, onError]);
+
   const handleCameraReady = useCallback(async () => {
     await startRecording();
     console.log('[CameraView] Camera ready, mic started');
-  }, [startRecording]);
 
-  // TODO: wire up to Camera onCameraReady + interval polling for frames
-  // const captureFrame = useCallback(async () => {
-  //   if (!cameraRef.current) return;
-  //   const photo = await cameraRef.current.takePictureAsync({
-  //     base64: true,
-  //     quality: 0.4,   // keep payload small
-  //     skipProcessing: true,
-  //   });
-  //   submitFrame({
-  //     base64: photo.base64!,
-  //     width: photo.width,
-  //     height: photo.height,
-  //     timestamp: Date.now(),
-  //   });
-  // }, [submitFrame]);
+    // Poll for frames — useFrameStreamer handles the 3s throttle internally
+    captureIntervalRef.current = setInterval(captureFrame, 3000);
+  }, [startRecording, captureFrame]);
+
+  useEffect(() => {
+    return () => {
+      if (captureIntervalRef.current) clearInterval(captureIntervalRef.current);
+      stopRecording();
+    };
+  }, [stopRecording]);
+
+  if (!permission?.granted) {
+    return <View style={styles.container} />;
+  }
 
   return (
     <View style={styles.container}>
-      {/* TODO: replace View with Camera once expo-camera is installed
-        <Camera
-          ref={cameraRef}
-          style={styles.camera}
-          type={CameraType.back}
-          onCameraReady={handleCameraReady}
-        />
-      */}
-      <View style={styles.camera} />
-
-      {/* AR overlay sits on top of the camera feed */}
+      <ExpoCameraView
+        ref={cameraRef}
+        style={styles.camera}
+        facing={'back' as CameraType}
+        onCameraReady={handleCameraReady}
+      />
       <AROverlay currentStep={currentStep} />
     </View>
   );
