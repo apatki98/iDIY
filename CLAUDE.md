@@ -103,3 +103,19 @@ GEMINI_API_KEY=
 - Supabase — Postgres + pgvector + auth
 - Model: gemini-3.1-flash-live-preview (voice+vision), gemini-3-flash (guide synthesis)
 - Embedding: text-embedding-004 successor
+
+---
+
+## Expo workflow note (important for Person 2)
+Camera and mic work in **Expo managed workflow** — no native code needed.
+
+ViroReact AR (`@reactvision/react-viro`) requires **bare workflow** because it
+uses native ARKit (iOS) and ARCore (Android) modules that managed Expo cannot
+include automatically.
+
+**Action required before wiring up AR:**
+```bash
+npx expo eject   # converts project to bare workflow — do this once, team-wide decision
+```
+Do not eject unilaterally — agree with the team first. Until then, AR components
+are stubbed and safe to develop against.
