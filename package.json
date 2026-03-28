@@ -1,0 +1,39 @@
+{
+  "name": "i-diy",
+  "version": "1.0.0",
+  "description": "AI-powered AR assembly guide. Point your camera at any flat-pack furniture — iDIY walks you through assembly step by step using voice, vision, and AR overlays.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "tsx --env-file=.env.local src/server/index.ts",
+    "ingest": "tsx --env-file=.env.local src/ai/ingestManual.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apatki98/iDIY.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/apatki98/iDIY/issues"
+  },
+  "homepage": "https://github.com/apatki98/iDIY#readme",
+  "dependencies": {
+    "@google/genai": "^1.47.0",
+    "@supabase/supabase-js": "^2.100.1",
+    "express": "^5.2.1",
+    "pdf-parse": "^2.4.5",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
