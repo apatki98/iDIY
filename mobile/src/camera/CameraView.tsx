@@ -10,7 +10,7 @@ import { Step } from '../types/guide';
 type CameraViewProps = {
   currentStep: Step | null;
   onFrame: (frame: { base64: string; width: number; height: number; timestamp: number }) => void;
-  onAudioChunk: (audio: Uint8Array) => void;
+  onAudioChunk: (base64Pcm: string) => void;
   onError: (message: string) => void;
 };
 
