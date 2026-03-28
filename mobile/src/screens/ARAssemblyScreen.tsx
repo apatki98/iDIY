@@ -97,10 +97,9 @@ export function ARAssemblyScreen({ guide: guideProp, onFinish }: ARAssemblyScree
     },
 
     onSessionEnd: () => {
-      console.log('[ARAssembly] Session ended');
+      console.log('[ARAssembly] Session ended (keeping guide visible)');
       flush();
-      setConnected(false);
-      onFinish?.();
+      // Don't navigate away or reset — keep the guide on screen
     },
   });
 

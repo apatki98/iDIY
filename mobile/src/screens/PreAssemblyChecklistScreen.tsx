@@ -250,7 +250,7 @@ export function PreAssemblyChecklistScreen({
 
       {/* CTA */}
       <View style={styles.ctaContainer}>
-        <TouchableOpacity onPress={allChecked ? onReady : undefined} activeOpacity={0.85}>
+        <TouchableOpacity onPress={onReady} activeOpacity={0.85}>
           <LinearGradient
             colors={allChecked ? Colors.gradientPurplePink : ['#C4B5FD', '#F9A8D4']}
             style={styles.ctaButton}

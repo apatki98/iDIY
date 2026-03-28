@@ -1,7 +1,7 @@
 {
   "name": "idiy",
   "version": "1.0.0",
-  "main": "App.tsx",
+  "main": "expo/AppEntry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.5",
     "@expo/vector-icons": "^14.0.0",
     "@react-navigation/native": "^7.0.0",
     "@react-navigation/native-stack": "^7.0.0",
@@ -19,11 +20,14 @@
     "expo-linear-gradient": "~14.0.2",
     "expo-status-bar": "~2.2.0",
     "react": "19.0.0",
+    "react-dom": "^19.0.0",
     "react-native": "0.79.0",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "^5.0.0",
-    "react-native-screens": "~4.4.0"
+    "react-native-screens": "~4.4.0",
+    "react-native-url-polyfill": "^3.0.0",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",

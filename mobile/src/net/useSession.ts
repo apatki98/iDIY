@@ -38,7 +38,9 @@ export function useSession(options: UseSessionOptions) {
 
     ws.onmessage = (event) => {
       try {
-        const msg = JSON.parse(event.data as string);
+        const raw = typeof event.data === 'string' ? event.data : String(event.data);
+        console.log('[useSession] Message received:', raw.substring(0, 100));
+        const msg = JSON.parse(raw);
         const cb = optionsRef.current;
 
         switch (msg.event) {
