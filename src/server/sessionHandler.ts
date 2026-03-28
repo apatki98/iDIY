@@ -36,13 +36,17 @@ export async function handleSession(ws: WebSocket, deviceId: string) {
   // 2. Synthesize GuideJSON
   console.log('[SessionHandler] Synthesizing guide...');
   const guide = await synthesizeGuide(device.manual_text, deviceId);
-  emit(ws, 'onGuideReady', guide);
   console.log(`[SessionHandler] Guide ready: ${guide.steps.length} steps`);
+
+  // Send guide and re-send after a short delay to handle race conditions
+  emit(ws, 'onGuideReady', guide);
+  setTimeout(() => emit(ws, 'onGuideReady', guide), 500);
+  setTimeout(() => emit(ws, 'onGuideReady', guide), 2000);
 
   // 3. Log session start
   const sessionId = await logSessionStart(deviceId);
 
-  // 4. Open Gemini Live session
+  // 4. Open Gemini Live session (non-blocking — guide is already sent)
   const gemini = await startGeminiSession(
     device.manual_text,
     device.name,
@@ -58,8 +62,8 @@ export async function handleSession(ws: WebSocket, deviceId: string) {
       },
       onClose: async () => {
         await logSessionEnd(sessionId);
-        emit(ws, 'onSessionEnd');
-        ws.close();
+        console.log('[SessionHandler] Gemini session closed (keeping WebSocket alive for guide)');
+        // Don't close WebSocket — guide is already sent, client can still navigate steps
       },
       onError: (message) => {
         emit(ws, 'onError', { message });
@@ -73,14 +77,18 @@ export async function handleSession(ws: WebSocket, deviceId: string) {
 
     switch (msg.type) {
       case 'audio':
+        console.log(`[SessionHandler] Audio received: ${String(msg.data).length} chars`);
         gemini.sendAudio(msg.data);
         break;
       case 'frame':
+        console.log(`[SessionHandler] Frame received: ${String(msg.data).length} chars`);
         gemini.sendFrame(msg.data);
         break;
       case 'toolResponse':
         gemini.sendToolResponse(msg.callId, msg.result);
         break;
+      default:
+        console.log(`[SessionHandler] Unknown message type: ${msg.type}`);
     }
   });
 
