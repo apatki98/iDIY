@@ -4,7 +4,7 @@ const ws = new WebSocket('ws://localhost:3001');
 
 ws.on('open', () => {
   console.log('Connected — sending init');
-  ws.send(JSON.stringify({ type: 'init', deviceId: 'IKEA-MALM-AA2301456' }));
+  ws.send(JSON.stringify({ type: 'init', deviceId: 'WAYFAIR-KAVIA-W004924293' }));
 });
 
 ws.on('message', (raw) => {

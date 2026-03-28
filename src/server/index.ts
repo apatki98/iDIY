@@ -24,7 +24,11 @@ wss.on('connection', (ws: WebSocket) => {
     const msg = JSON.parse(raw.toString());
 
     if (msg.type === 'init' && msg.deviceId) {
-      handleSession(ws, msg.deviceId);
+      handleSession(ws, msg.deviceId).catch((err) => {
+        console.error('[Server] Session error:', err);
+        ws.send(JSON.stringify({ event: 'onError', data: { message: err.message } }));
+        ws.close();
+      });
     } else {
       ws.send(JSON.stringify({ event: 'onError', data: { message: 'First message must be { type: "init", deviceId: "..." }' } }));
       ws.close();

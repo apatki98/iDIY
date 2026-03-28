@@ -29,7 +29,7 @@ Output ONLY the JSON, no markdown fences, no commentary.`;
 
 export async function synthesizeGuide(manualText: string, deviceId: string): Promise<GuideJSON> {
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash',
+    model: 'gemini-3-flash-preview',
     contents: [
       {
         role: 'user',
