@@ -1,24 +1,12 @@
--- iDIY Supabase schema
+-- iDIY Supabase schema (v2 — simplified, no pgvector)
 -- Owner: Person 1 (feature/p1-ai-backend)
-
-create extension if not exists vector;
-
-create table manual_chunks (
-  id          uuid primary key default gen_random_uuid(),
-  device_id   text not null,
-  chunk_text  text not null,
-  embedding   vector(1024),
-  page        int,
-  created_at  timestamptz default now()
-);
-
-create index on manual_chunks using ivfflat (embedding vector_cosine_ops);
 
 create table devices (
   id          text primary key,
   name        text not null,
   brand       text,
   manual_url  text,
+  manual_text text,
   created_at  timestamptz default now()
 );
 
